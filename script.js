@@ -41,29 +41,50 @@ buttons.forEach(button => {
 
 // Function to tokenize the input expression into numbers and operators
 function tokenize(expression) {
-    const result = []; // Array to store tokens
-    let numberbuffer = ""; // Buffer to accumulate digits of a number
+    const result = [];
+    let numberbuffer = "";
 
-    for (char of expression) {
+    for (let i = 0; i < expression.length; i++) {
+        const char = expression[i];
+
+        // If the character is a digit, add it to the current number buffer
         if (char >= "0" && char <= "9") {
-            // If character is a digit, add it to the number buffer
             numberbuffer += char;
-        } else if (numberbuffer.length > 0) {
-            // If a non-digit is encountered, push the accumulated number to result
-            result.push(numberbuffer);
-            numberbuffer = ""; // Reset the buffer
-        }
-        if (operators.includes(char) || parenthesis.includes(char)) {
-            // If character is an operator or parenthesis, add it to result
-            result.push(char);
+
+        // If the character is a '-' and it could be part of a negative number:
+        //  - if it's the first character in the expression, or
+        //  - if it follows an operator (+, -, *, /), or
+        //  - if it follows an opening parenthesis '('
+        // then treat the '-' as part of the number (negative sign)
+        } else if (char === '-' && (
+                    i === 0 || 
+                    operators.includes(expression[i - 1]) || 
+                    expression[i - 1] === '('
+                )) {
+            numberbuffer += char;
+
+        } else {
+            // If the number buffer is not empty, push it to the result tokens
+            if (numberbuffer.length > 0) {
+                result.push(numberbuffer);
+                numberbuffer = "";
+            }
+
+            // If the character is an operator or a parenthesis, push it as a token
+            if (operators.includes(char) || parenthesis.includes(char)) {
+                result.push(char);
+            }
         }
     }
+
+    // Push any remaining number in the buffer after the loop ends
     if (numberbuffer.length > 0) {
-        // Push any remaining number in the buffer to result
         result.push(numberbuffer);
     }
-    return result; // Return the tokenized expression
+
+    return result; // Return the array of tokens
 }
+
 
 // Function to get the difference in precedence between two operators
 function hasHigherOrEqualPrecedence(op1,op2) {
